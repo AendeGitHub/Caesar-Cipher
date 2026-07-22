@@ -87,4 +87,3 @@ python caesar_cipher.py
 - Automatic key detection via letter frequency analysis instead of manual inspection
 - Command-line arguments (`argparse`) instead of interactive prompts
 - Unit tests
-```
