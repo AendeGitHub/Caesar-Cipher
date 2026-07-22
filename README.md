@@ -1,70 +1,74 @@
+```markdown
 # Caesar Cipher
 
-A simple command-line Caesar cipher written in Python. You type a word, choose a shift number, and the program encrypts or decrypts it.
+A command-line Caesar cipher in Python with three modes: encode, decode, and brute-force crack.
 
-This is one of my first Python projects — I built it while learning the basics of loops, strings, and how characters are stored as numbers (ASCII).
+Built while learning Python fundamentals — strings, loops, and how characters map to numbers in ASCII.
 
 ## What it does
 
-The Caesar cipher is one of the oldest known encryption methods. Each letter is replaced by another letter a fixed number of positions further down the alphabet.
+The Caesar cipher shifts each letter a fixed number of positions through the alphabet.
 
 ```
 a -> d   (shift 3)
 b -> e
-z -> c   (wraps around the end of the alphabet)
+z -> c   (wraps around)
 ```
 
-- Handles both **uppercase and lowercase** letters correctly
-- **Spaces, punctuation, and numbers** are left unchanged
-- Supports **any shift number**, not just 3
-- Two modes: **encrypt** and **decrypt**
+- Handles uppercase and lowercase correctly
+- Leaves spaces, punctuation, and digits unchanged
+- Works with any shift value, including negative ones
+- **Crack mode** — recovers the message without knowing the key
 
-## Example
+## Why crack mode matters
 
+The Caesar cipher has only 25 possible keys, so trying all of them takes microseconds. Crack mode prints every candidate; the readable one is the answer. This is the reason the cipher is a historical curiosity rather than real encryption — the keyspace is far too small.
+
+## Examples
+
+Encoding:
 ```
-Encrypt or Decrypt? (e/d): e
-Word: Hello, World!
-Shift number: 3
+encode / decode / crack: encode
+Text: Hello, World!
+Shift: 3
 Khoor, Zruog!
+```
 
-Encrypt or Decrypt? (e/d): d
-Word: Khoor, Zruog!
-Shift number: 3
-Hello, World!
+Cracking without the key:
+```
+encode / decode / crack: crack
+Text: Khoor, Zruog!
+ 1: Jgnnq, Yqtnf!
+ 2: Ifmmp, Xpsme!
+ 3: Hello, World!     <- readable
+ 4: Gdkkn, Vnqkc!
+ ...
 ```
 
 ## How it works
 
-The program reads a word and goes through it letter by letter:
-
-1. Ask the user to choose encrypt (`e`) or decrypt (`d`)
-2. Convert each letter to a number with `ord()`
-3. Shift it forward or backward using `% 26` so the alphabet wraps around
-4. Convert the number back to a letter with `chr()`
-5. Leave spaces and punctuation unchanged
+A single function handles both directions — decoding is just encoding with a negative shift:
 
 ```python
-mode = input("Encrypt or Decrypt? (e/d): ")
-Caesar = input("Word: ")
-j = int(input("Shift number: "))
-result = ""
-
-for char in Caesar:
-    if char.isupper():
-        shifted = (ord(char) - ord('A') + (j if mode == 'e' else -j)) % 26 + ord('A')
-        result += chr(shifted)
-    elif char.islower():
-        shifted = (ord(char) - ord('a') + (j if mode == 'e' else -j)) % 26 + ord('a')
-        result += chr(shifted)
-    else:
-        result += char
-
-print(result)
+def caesar(text: str, shift: int) -> str:
+    result = ""
+    for char in text:
+        if char.isupper():
+            result += chr((ord(char) - ord('A') + shift) % 26 + ord('A'))
+        elif char.islower():
+            result += chr((ord(char) - ord('a') + shift) % 26 + ord('a'))
+        else:
+            result += char
+    return result
 ```
+
+Each letter is converted to a number with `ord()`, shifted, wrapped with `% 26`, and converted back with `chr()`. Subtracting `ord('A')` or `ord('a')` maps the letter to the range 0–25 first, so the arithmetic works the same for both cases.
+
+Crack mode simply calls this function 25 times with every possible negative shift.
 
 ## How to run
 
-Make sure you have Python 3 installed, then run:
+Requires Python 3. No dependencies.
 
 ```bash
 python caesar_cipher.py
@@ -72,13 +76,15 @@ python caesar_cipher.py
 
 ## What I learned
 
-- How characters map to numbers (ASCII), and converting between them with `ord()` and `chr()`
-- Looping through the characters of a string in Python
-- Using the modulo operator `%` to wrap values around a fixed range
-- The difference between uppercase (`ord('A')`) and lowercase (`ord('a')`) in ASCII
-- Using `isupper()` and `islower()` to handle different cases
-- Reading input from the command line with `input()`
+- ASCII and converting between characters and integers with `ord()` / `chr()`
+- Modular arithmetic for wrapping values around a fixed range
+- Why one function with a signed parameter beats two near-identical functions
+- Handling invalid input without crashing
+- That a small keyspace makes a cipher trivially breakable
 
----
+## Possible improvements
 
-*Made while learning Python.*
+- Automatic key detection via letter frequency analysis instead of manual inspection
+- Command-line arguments (`argparse`) instead of interactive prompts
+- Unit tests
+```
